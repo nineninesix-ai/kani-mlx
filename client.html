@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kani TTS Client</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        input[type="number"], input[type="range"] {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        input[type="range"] {
+            width: 100px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #1976D2;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .audio-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .audio-container h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .status.loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1b0b7;
+        }
+        
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+        }
+        
+        .examples h3 {
+            margin-top: 0;
+            color: #1565c0;
+        }
+        
+        .example-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 12px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .example-btn:hover {
+            background-color: #1565c0;
+        }
+        
+        .api-info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        img {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img alt="Logo" width="100px" height="100px" src="logo.png" />
+        <h1>Kani TTS</h1>
+        
+        <div class="form-group">
+            <label for="textInput">Enter text to convert to speech:</label>
+            <textarea 
+                id="textInput" 
+                placeholder="Type your text here... For example: 'Hello world! My name is Kani, I'm a speech generation model!'"
+            >The morning fog rolled across the valley like a gentle gray blanket, slowly revealing the ancient oak trees that had stood sentinel for centuries.</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Generation Parameters:</label>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="temperature">Temperature:</label>
+                    <input type="range" id="temperature" min="0.1" max="1.5" step="0.1" value="0.6">
+                    <span id="tempValue">0.6</span>
+                </div>
+                <div class="control-group">
+                    <label for="maxTokens">Max Tokens:</label>
+                    <input type="number" id="maxTokens" min="100" max="2000" value="1200">
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="generateBtn" class="btn-primary">🎵 Generate Speech</button>
+            <button id="streamBtn" class="btn-secondary">📡 Stream Speech</button>
+            <button id="stopBtn" class="btn-danger" disabled>⏹️ Stop</button>
+        </div>
+        
+        <div id="status"></div>
+        
+        <div id="audioContainer" class="audio-container" style="display: none;">
+            <h3>Generated Audio:</h3>
+            <audio id="audioPlayer" controls>
+                Your browser does not support the audio element.
+            </audio>
+            <div>
+                <button id="downloadBtn" class="btn-secondary" style="margin-top: 10px;">💾 Download Audio</button>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h3>Quick Examples:</h3>
+            <button class="example-btn" onclick="setExample('Hello world! My name is Kani, I am a speech generation model!')">Greeting</button>
+            <button class="example-btn" onclick="setExample('The quick brown fox jumps over the lazy dog.')">Pangram</button>
+            <button class="example-btn" onclick="setExample('Welcome to our artificial intelligence powered text to speech system.')">Welcome</button>
+            <button class="example-btn" onclick="setExample('In a hole in the ground there lived a hobbit.')">Story</button>
+        </div>
+        
+        <div class="api-info">
+            <strong>API Endpoints:</strong><br>
+            • POST /tts - Generate complete audio file<br>
+            • POST /stream-tts - Stream audio generation<br>
+            • GET /health - Check server status<br>
+            <br>
+            <strong>Server:</strong> <span id="serverUrl">http://localhost:8000</span>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentAudioUrl = null;
+        let isGenerating = false;
+        
+        // Elements
+        const textInput = document.getElementById('textInput');
+        const temperatureSlider = document.getElementById('temperature');
+        const tempValue = document.getElementById('tempValue');
+        const maxTokensInput = document.getElementById('maxTokens');
+        const generateBtn = document.getElementById('generateBtn');
+        const streamBtn = document.getElementById('streamBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusDiv = document.getElementById('status');
+        const audioContainer = document.getElementById('audioContainer');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        // Update temperature display
+        temperatureSlider.addEventListener('input', (e) => {
+            tempValue.textContent = e.target.value;
+        });
+        
+        // Set example text
+        function setExample(text) {
+            textInput.value = text;
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Clear status
+        function clearStatus() {
+            statusDiv.innerHTML = '';
+        }
+        
+        // Set loading state
+        function setLoading(loading) {
+            isGenerating = loading;
+            generateBtn.disabled = loading;
+            streamBtn.disabled = loading;
+            stopBtn.disabled = !loading;
+            
+            if (loading) {
+                showStatus('🎵 Generating speech... This may take a few seconds.', 'loading');
+            }
+        }
+        
+        // Generate speech (regular endpoint)
+        async function generateSpeech() {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus('Please enter some text to convert to speech.', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        temperature: parseFloat(temperatureSlider.value),
+                        max_tokens: parseInt(maxTokensInput.value)
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Speech generation failed');
+                }
+                
+                const audioBlob = await response.blob();
+                displayAudio(audioBlob);
+                showStatus('✅ Speech generated successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // Stream speech with immediate playback
+        async function streamSpeech() {
+            const text = textInput.value.trim();
+            if (!text) {
+                showStatus('Please enter some text to convert to speech.', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('🎵 Starting audio generation... Audio will begin playing shortly.', 'loading');
+
+            try {
+                const response = await fetch(`${API_BASE}/stream-tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        temperature: parseFloat(temperatureSlider.value),
+                        max_tokens: parseInt(maxTokensInput.value)
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Speech streaming failed');
+                }
+
+                // Handle streaming PCM audio
+                await handleStreamingPCM(response);
+                showStatus('✅ Speech streamed and played successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Handle streaming PCM audio chunks
+        async function handleStreamingPCM(response) {
+            const reader = response.body.getReader();
+            const sampleRate = 22050;
+            const channels = 1;
+
+            // Create Audio Context for progressive playback
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+
+            let nextStartTime = null;
+            let hasStartedPlaying = false;
+            let chunksScheduled = 0;
+
+            const allPCMChunks = [];
+            let buffer = new Uint8Array(0);
+
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+
+                    if (done) break;
+
+                    // Append to buffer
+                    const newBuffer = new Uint8Array(buffer.length + value.length);
+                    newBuffer.set(buffer);
+                    newBuffer.set(value, buffer.length);
+                    buffer = newBuffer;
+
+                    // Process complete chunks (4 bytes length + data)
+                    while (buffer.length >= 4) {
+                        const dataView = new DataView(buffer.buffer, buffer.byteOffset, buffer.length);
+                        const chunkLength = dataView.getUint32(0, true); // little-endian
+
+                        if (chunkLength === 0) {
+                            // End marker
+                            console.log('[STREAM] Received end marker');
+                            buffer = buffer.slice(4);
+                            break;
+                        }
+
+                        if (chunkLength === 0xFFFFFFFF) {
+                            // Error marker
+                            throw new Error('Server error during streaming');
+                        }
+
+                        if (buffer.length < 4 + chunkLength) {
+                            // Not enough data yet
+                            break;
+                        }
+
+                        // Extract PCM chunk
+                        const pcmData = buffer.slice(4, 4 + chunkLength);
+                        buffer = buffer.slice(4 + chunkLength);
+
+                        // Convert Int16 PCM to Float32
+                        const int16Array = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.length / 2);
+                        const float32Array = new Float32Array(int16Array.length);
+                        for (let i = 0; i < int16Array.length; i++) {
+                            float32Array[i] = int16Array[i] / 32768.0;
+                        }
+
+                        allPCMChunks.push(float32Array);
+
+                        // Create audio buffer
+                        const audioBuffer = audioContext.createBuffer(channels, float32Array.length, sampleRate);
+                        audioBuffer.getChannelData(0).set(float32Array);
+
+                        const source = audioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(audioContext.destination);
+
+                        // Start playback after first chunk with adaptive buffer
+                        if (nextStartTime === null) {
+                            // For first chunk: use minimal buffer (100ms)
+                            // For second chunk: if it arrives before first finishes, playback is smooth
+                            // This gives fastest start while still allowing buffer to build
+                            const initialBuffer = allPCMChunks.length === 1 ? 0.1 : 0.05;
+                            nextStartTime = audioContext.currentTime + initialBuffer;
+                            hasStartedPlaying = true;
+                            showStatus('🔊 Audio playing! Streaming in real-time...', 'loading');
+                            console.log(`[STREAM] Starting playback (chunk ${allPCMChunks.length}), buffer ${initialBuffer * 1000}ms`);
+                        }
+
+                        // Schedule chunk
+                        const now = audioContext.currentTime;
+                        const scheduleTime = Math.max(nextStartTime, now);
+
+                        source.start(scheduleTime);
+
+                        // Calculate exact next start time (no gaps!)
+                        nextStartTime = scheduleTime + audioBuffer.duration;
+                        chunksScheduled++;
+
+                        console.log(`[STREAM] Scheduled chunk ${chunksScheduled} at ${scheduleTime.toFixed(3)}s, duration ${audioBuffer.duration.toFixed(3)}s, next ${nextStartTime.toFixed(3)}s`);
+                    }
+                }
+
+                // Create final WAV file for download
+                if (allPCMChunks.length > 0) {
+                    const totalLength = allPCMChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+                    const finalPCM = new Float32Array(totalLength);
+                    let offset = 0;
+                    for (const chunk of allPCMChunks) {
+                        finalPCM.set(chunk, offset);
+                        offset += chunk.length;
+                    }
+
+                    // Convert to WAV
+                    const wavBlob = createWavBlob(finalPCM, sampleRate);
+                    displayStreamingAudio(wavBlob, false);
+                }
+
+            } finally {
+                reader.releaseLock();
+            }
+        }
+
+        // Create WAV file from PCM data
+        function createWavBlob(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const bytesPerSample = bitsPerSample / 8;
+            const blockAlign = numChannels * bytesPerSample;
+
+            const dataLength = pcmData.length * bytesPerSample;
+            const buffer = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(buffer);
+
+            // WAV header
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true); // fmt chunk size
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true); // byte rate
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataLength, true);
+
+            // PCM data
+            let offset = 44;
+            for (let i = 0; i < pcmData.length; i++) {
+                const sample = Math.max(-1, Math.min(1, pcmData[i]));
+                view.setInt16(offset, sample * 0x7FFF, true);
+                offset += 2;
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        // Display streaming audio with option for immediate playback
+        function displayStreamingAudio(audioBlob, isStreaming = false) {
+            // Clean up previous audio URL
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+
+            // For final audio: update the main player
+            currentAudioUrl = URL.createObjectURL(audioBlob);
+            audioPlayer.src = currentAudioUrl;
+            audioContainer.style.display = 'block';
+
+            // Set up download for complete audio
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = currentAudioUrl;
+                a.download = `tts_audio_${new Date().getTime()}.wav`;
+                a.click();
+            };
+        }
+        
+        // Display audio
+        function displayAudio(audioBlob) {
+            // Clean up previous audio URL
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+            
+            currentAudioUrl = URL.createObjectURL(audioBlob);
+            audioPlayer.src = currentAudioUrl;
+            audioContainer.style.display = 'block';
+            
+            // Set up download
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = currentAudioUrl;
+                a.download = `tts_audio_${new Date().getTime()}.wav`;
+                a.click();
+            };
+        }
+        
+        // Stop generation (placeholder - would need server-side implementation)
+        function stopGeneration() {
+            showStatus('Stop functionality would require server-side implementation.', 'info');
+            setLoading(false);
+        }
+        
+        // Event listeners
+        generateBtn.addEventListener('click', generateSpeech);
+        streamBtn.addEventListener('click', streamSpeech);
+        stopBtn.addEventListener('click', stopGeneration);
+        
+        // Enter key support
+        textInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                generateSpeech();
+            }
+        });
+        
+        // Health check on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    const health = await response.json();
+                    if (health.tts_initialized) {
+                        showStatus('🟢 Server is ready!', 'success');
+                        setTimeout(clearStatus, 3000);
+                    } else {
+                        showStatus('🟡 Server is starting up...', 'loading');
+                    }
+                } else {
+                    showStatus('🔴 Cannot connect to server. Make sure it\'s running on http://localhost:8000', 'error');
+                }
+            } catch (error) {
+                showStatus('🔴 Cannot connect to server. Make sure it\'s running on http://localhost:8000', 'error');
+            }
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+        });
+    </script>
+</body>
+</html>
