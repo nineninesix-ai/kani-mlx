@@ -1,7 +1,7 @@
 <div align="center">
   <img src="logo.png" alt="Kani TTS Logo" width="150"/>
 
-  # Kani TTS
+  # Kani TTS for Apple Silicon
 
   A high-quality text-to-speech (TTS) system powered by MLX
 </div>
