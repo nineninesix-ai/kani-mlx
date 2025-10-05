@@ -20,7 +20,7 @@ CODEBOOK_SIZE = 4032
 SAMPLE_RATE = 22050
 
 # Streaming configuration
-CHUNK_SIZE = 25  # Number of new frames to output per iteration
+CHUNK_SIZE = 50  # Number of new frames to output per iteration
 LOOKBACK_FRAMES = 15  # Number of frames to include from previous context
 
 # Generation configuration

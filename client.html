@@ -422,6 +422,7 @@
             let nextStartTime = null;
             let hasStartedPlaying = false;
             let chunksScheduled = 0;
+            const PREBUFFER_CHUNKS = 1; // Buffer 2 chunks before starting
 
             const allPCMChunks = [];
             let buffer = new Uint8Array(0);
@@ -481,29 +482,33 @@
                         source.buffer = audioBuffer;
                         source.connect(audioContext.destination);
 
-                        // Start playback after first chunk with adaptive buffer
-                        if (nextStartTime === null) {
-                            // For first chunk: use minimal buffer (100ms)
-                            // For second chunk: if it arrives before first finishes, playback is smooth
-                            // This gives fastest start while still allowing buffer to build
-                            const initialBuffer = allPCMChunks.length === 1 ? 0.1 : 0.05;
-                            nextStartTime = audioContext.currentTime + initialBuffer;
+                        // Start playback only after buffering initial chunks
+                        if (!hasStartedPlaying && allPCMChunks.length >= PREBUFFER_CHUNKS) {
+                            nextStartTime = audioContext.currentTime + 0.05;
                             hasStartedPlaying = true;
                             showStatus('🔊 Audio playing! Streaming in real-time...', 'loading');
-                            console.log(`[STREAM] Starting playback (chunk ${allPCMChunks.length}), buffer ${initialBuffer * 1000}ms`);
+                            console.log(`[STREAM] Starting playback with ${PREBUFFER_CHUNKS} chunks buffered`);
                         }
 
-                        // Schedule chunk
-                        const now = audioContext.currentTime;
-                        const scheduleTime = Math.max(nextStartTime, now);
+                        // Schedule chunk (only if playback has started)
+                        if (hasStartedPlaying) {
+                            const now = audioContext.currentTime;
+                            const bufferAhead = nextStartTime - now;
 
-                        source.start(scheduleTime);
+                            // Dynamic buffer: keep at least 50% of chunk duration buffered
+                            const minBuffer = audioBuffer.duration * 0.5;
+                            if (bufferAhead < minBuffer) {
+                                nextStartTime = now + minBuffer;
+                                console.warn(`[STREAM] Buffer underrun! Adding ${(minBuffer * 1000).toFixed(0)}ms safety gap`);
+                            }
 
-                        // Calculate exact next start time (no gaps!)
-                        nextStartTime = scheduleTime + audioBuffer.duration;
-                        chunksScheduled++;
-
-                        console.log(`[STREAM] Scheduled chunk ${chunksScheduled} at ${scheduleTime.toFixed(3)}s, duration ${audioBuffer.duration.toFixed(3)}s, next ${nextStartTime.toFixed(3)}s`);
+                            source.start(nextStartTime);
+                            nextStartTime += audioBuffer.duration;
+                            chunksScheduled++;
+                            console.log(`[STREAM] Scheduled chunk ${chunksScheduled}, duration ${audioBuffer.duration.toFixed(3)}s, next ${nextStartTime.toFixed(3)}s`);
+                        } else {
+                            console.log(`[STREAM] Buffering chunk ${allPCMChunks.length}/${PREBUFFER_CHUNKS}...`);
+                        }
                     }
                 }
 
