@@ -152,7 +152,7 @@ The system uses a **sliding window decoder** for smooth audio generation:
 
 ### Performance Metrics
 
-Time to First Token (TTFT) on Macbook Air with M2 Silicon and 8GB RAM is around 2-3 sec. Tested on DuckDuckGo browser.
+Time to first chunk (25 frames) on Macbook Air with M2 Silicon and 8GB RAM is around 2-3 sec. Tested on DuckDuckGo browser.
 
 > **Note:** If you experience audio breaks during streaming, try increasing `CHUNK_SIZE` in [config.py](config.py) to buffer more frames per chunk.
 
